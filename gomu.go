@@ -200,7 +200,7 @@ func ProbeFiles(files []string, folderdates []string) [][]string {
 }
 
 // CrawlAndCollect : asdf
-func CrawlAndCollect(searchdirectory string, searchType string, fileType string) ([]string, []string) {
+func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []string) {
 	var collector []string
 	var folderCollect []string
 	var files3 []string
@@ -226,7 +226,7 @@ func CrawlAndCollect(searchdirectory string, searchType string, fileType string)
 			log.Fatal(err)
 		}
 		if fileInfo.IsDir() == true {
-			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != searchdirectory[22:len(searchdirectory)]) && (fileInfo.Name() != "gifs") {
+			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != searchdirectory[22:len(searchdirectory)]) && (fileInfo.Name() != "gifs") && (fileInfo.Name() != "stills") {
 				folderCollect = append(folderCollect, fileInfo.Name())
 
 			}
@@ -236,15 +236,10 @@ func CrawlAndCollect(searchdirectory string, searchType string, fileType string)
 
 	for k := 1; k < len(folderCollect); k++ {
 		newDir := searchDir + "/" + folderCollect[k] + searchType
-		// newDir := folderCollect[k]
-		// fmt.Println(newDir)
 		err := filepath.Walk(newDir, func(path string, f os.FileInfo, err error) error {
-
 			if !f.IsDir() {
 				r, err2 := regexp.MatchString(".mp4", f.Name())
 				if err2 == nil && r {
-					// fmt.Println(newDir + "/" + f.Name())
-					// files3 = append(files3, f.Name())
 					testfiles = append(testfiles, newDir)
 					files3 = append(files3, newDir+"/"+f.Name())
 				} else {
