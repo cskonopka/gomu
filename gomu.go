@@ -130,7 +130,7 @@ func ExportCSV(inputdata [][]string, csvFile string) {
 }
 
 // ProbeFiles : ffprobe input files
-func ProbeFiles(files []string, folderdates []string) [][]string {
+func ProbeFiles(dir string, files []string, folderdates []string) [][]string {
 	var matrix [][]string
 	matrix = append(matrix, []string{
 		"Filename",
@@ -147,12 +147,13 @@ func ProbeFiles(files []string, folderdates []string) [][]string {
 
 	// Probe Video Files
 	for h := 0; h < len(files); h++ {
-		data, err := ffprobe.GetProbeData(files[h], 500*time.Millisecond)
+		new := dir + "/" + folderdates[h] + "/edits/" + files[h]
+
+		data, err := ffprobe.GetProbeData(new, 5000*time.Millisecond)
 		if err != nil {
 			log.Panicf("Error getting data: %v", err)
 		}
 
-		log.Print(data)
 		buf, err := json.MarshalIndent(data, "", "  ")
 		if err != nil {
 			log.Panicf("Error unmarshalling: %v", err)
@@ -164,7 +165,6 @@ func ProbeFiles(files []string, folderdates []string) [][]string {
 			panic(err)
 		}
 
-		// Strip filename
 		ffprobeFilename := probed.Format.Filename
 		cleanFilename := filepath.Base(ffprobeFilename)
 
@@ -195,7 +195,9 @@ func ProbeFiles(files []string, folderdates []string) [][]string {
 			probed.Format.BitRate,
 			probed.Format.FormatName,
 			probed.Format.FormatLongName})
+
 	}
+	// fmt.Println(matrix)
 	return matrix
 }
 
@@ -226,7 +228,7 @@ func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []str
 			log.Fatal(err)
 		}
 		if fileInfo.IsDir() == true {
-			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != searchdirectory[22:len(searchdirectory)]) && (fileInfo.Name() != "gifs") && (fileInfo.Name() != "stills") {
+			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != searchdirectory[22:len(searchdirectory)]) && (fileInfo.Name() != "gifs") {
 				folderCollect = append(folderCollect, fileInfo.Name())
 
 			}
@@ -236,30 +238,40 @@ func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []str
 
 	for k := 1; k < len(folderCollect); k++ {
 		newDir := searchDir + "/" + folderCollect[k] + searchType
+		// newDir := folderCollect[k]
+		// fmt.Println(newDir)
 		err := filepath.Walk(newDir, func(path string, f os.FileInfo, err error) error {
-			if !f.IsDir() {
-				r, err2 := regexp.MatchString(".mp4", f.Name())
-				if err2 == nil && r {
-					testfiles = append(testfiles, newDir)
-					files3 = append(files3, newDir+"/"+f.Name())
-				} else {
 
+			if !f.IsDir() {
+				// r, err2 := regexp.MatchString(".mp4", f.Name())
+				// if err2 == nil && r {
+				// 	// fmt.Println(newDir + "/" + f.Name())
+				// 	// files3 = append(files3, f.Name())
+				// 	testfiles = append(testfiles, newDir)
+				// 	files3 = append(files3, newDir+"/"+f.Name())
+				// } else {
+
+				// }
+				if (f.Name()[len(f.Name())-4:]) == ".mp4" {
+					fmt.Println("MP4")
+					r, err2 := regexp.MatchString(".mp4", f.Name())
+					if err2 == nil && r {
+						testfiles = append(testfiles, newDir)
+						files3 = append(files3, newDir+"/"+f.Name())
+					} else {
+
+					}
+				} else if f.Name()[len(f.Name())-4:] == ".mov" {
+					fmt.Println("MOV")
+					r, err2 := regexp.MatchString(".mov", f.Name())
+					if err2 == nil && r {
+						testfiles = append(testfiles, newDir)
+						files3 = append(files3, newDir+"/"+f.Name())
+					} else {
+
+					}
 				}
 			}
-			// if !f.IsDir() {
-			// 	r, err2 := regexp.MatchString(fileType, f.Name())
-			// 	if f.Name() == ".mp4" {
-			// 		if err2 == nil && r {
-			// 			fmt.Println(newDir + "/" + f.Name())
-			// 			// files3 = append(files3, f.Name())
-			// 			testfiles = append(testfiles, newDir)
-			// 			files3 = append(files3, newDir+"/"+f.Name())
-			// 		} else {
-
-			// 		}
-
-			// 	}
-			// }
 			return nil
 		})
 		if err != nil {
