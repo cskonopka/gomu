@@ -228,36 +228,25 @@ func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []str
 			log.Fatal(err)
 		}
 		if fileInfo.IsDir() == true {
-			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != searchdirectory[22:len(searchdirectory)]) && (fileInfo.Name() != "gifs") {
+			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != searchdirectory[22:len(searchdirectory)]) && (fileInfo.Name() != "gifs") && (fileInfo.Name() != "cuts") && (fileInfo.Name() != "stills") {
 				folderCollect = append(folderCollect, fileInfo.Name())
 
 			}
 		}
 	}
-	// fmt.Println(folderCollect)
 
 	for k := 1; k < len(folderCollect); k++ {
 		newDir := searchDir + "/" + folderCollect[k] + searchType
-		// newDir := folderCollect[k]
-		// fmt.Println(newDir)
 		err := filepath.Walk(newDir, func(path string, f os.FileInfo, err error) error {
 
 			if !f.IsDir() {
-				// r, err2 := regexp.MatchString(".mp4", f.Name())
-				// if err2 == nil && r {
-				// 	// fmt.Println(newDir + "/" + f.Name())
-				// 	// files3 = append(files3, f.Name())
-				// 	testfiles = append(testfiles, newDir)
-				// 	files3 = append(files3, newDir+"/"+f.Name())
-				// } else {
-
-				// }
 				if (f.Name()[len(f.Name())-4:]) == ".mp4" {
 					fmt.Println("MP4")
 					r, err2 := regexp.MatchString(".mp4", f.Name())
 					if err2 == nil && r {
 						testfiles = append(testfiles, newDir)
 						files3 = append(files3, newDir+"/"+f.Name())
+						fmt.Println(f.Name())
 					} else {
 
 					}
@@ -267,6 +256,7 @@ func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []str
 					if err2 == nil && r {
 						testfiles = append(testfiles, newDir)
 						files3 = append(files3, newDir+"/"+f.Name())
+						fmt.Println(f.Name())
 					} else {
 
 					}
@@ -278,6 +268,5 @@ func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []str
 			panic(err)
 		}
 	}
-
 	return testfiles, files3
 }
