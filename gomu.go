@@ -66,6 +66,29 @@ func CreatePNG(mp4 string, png string) {
 	cmd2.Run()
 }
 
+// MovePNG : Move .png to folder
+func MovePNG(source string, destination string) {
+	fmt.Println("-- MOVE PNG --")
+	fmt.Println(destination)
+	cmd4 := exec.Command("mv", source, destination)
+	cmd4.Run()
+}
+
+// BytesToString : just that
+func BytesToString(data []byte) string {
+	return string(data[:])
+}
+
+// CreateLowResGIF : Create .gif file from source content and .png palatte
+func CreateLowResGIF(mp4 string, gif string) {
+	fmt.Println("-- CREATE GIF -- ", gif)
+	// cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "13", "-i", mp4, "-filter_complex", "[0:v] fps=15,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
+	// cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=15,scale=w=1280:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
+	cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=12,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
+
+	cmd3.Run()
+}
+
 // CreateGIF : Create .gif file from source content and .png palatte
 func CreateGIF(mp4 string, gif string) {
 	fmt.Println("-- CREATE GIF -- ", gif)
@@ -129,14 +152,24 @@ func ExportCSV(inputdata [][]string, csvFile string) {
 	}
 }
 
+const (
+	layoutISO = "2006-01-02"
+	layoutUS  = "January 2, 2006"
+)
+
 // ProbeFiles : ffprobe input files
 func ProbeFiles(dir string, files []string, folderdates []string) [][]string {
 	var matrix [][]string
 	matrix = append(matrix, []string{
 		"Filename",
-		"FolderDate",
+		"File Type",
+		"Folder Date",
+		"Folder Day Number",
 		"Edit Date",
 		"Edit Day",
+		"Edit Day Number",
+		"Month",
+		"Year",
 		"Time",
 		"Timezone",
 		"Duration",
@@ -148,7 +181,7 @@ func ProbeFiles(dir string, files []string, folderdates []string) [][]string {
 	// Probe Video Files
 	for h := 0; h < len(files); h++ {
 		new := dir + "/" + folderdates[h] + "/edits/" + files[h]
-
+		// fmt.Println(new)
 		data, err := ffprobe.GetProbeData(new, 5000*time.Millisecond)
 		if err != nil {
 			log.Panicf("Error getting data: %v", err)
@@ -158,7 +191,7 @@ func ProbeFiles(dir string, files []string, folderdates []string) [][]string {
 		if err != nil {
 			log.Panicf("Error unmarshalling: %v", err)
 		}
-		log.Print(string(buf))
+		// log.Print(string(buf))
 
 		var probed Ffprobe
 		if err := json.Unmarshal(buf, &probed); err != nil {
@@ -166,36 +199,42 @@ func ProbeFiles(dir string, files []string, folderdates []string) [][]string {
 		}
 
 		ffprobeFilename := probed.Format.Filename
-		cleanFilename := filepath.Base(ffprobeFilename)
-
-		fmt.Println(cleanFilename)
-		fmt.Println(probed.Format.Duration)
-		fmt.Println(probed.Format.Tags.CreationTime)
-		fmt.Println(probed.Format.FormatLongName)
-		fmt.Println(probed.Format.Size)
+		cleanName := filepath.Base(ffprobeFilename)
 
 		unixdate := string(probed.Format.Tags.CreationTime.Format(time.RFC850))
 
 		s := strings.Split(unixdate, ",")
+		// date := s[1][1:11]
 		day := s[0]
-		date := s[1][1:11]
-		time := s[1][11:19]
+		dayNum := s[1][1:3]
+		month := s[1][4:7]
+		year := "20" + s[1][8:11]
+		edittime := s[1][11:19]
 		loc := s[1][20:23]
+		folderDay := folderdates[h][3:5]
+
+		// fmt.Println(date, day, dayNum, month, year, time, loc)
+
+		fmt.Println(cleanName[:len(cleanName)-4], cleanName[len(cleanName)-4:], folderdates[h], month, folderDay, year, folderDay, day, dayNum, month, year, edittime, loc, probed.Format.Duration, probed.Format.Tags.CreationTime, probed.Format.FormatLongName, probed.Format.Size)
 
 		fmt.Println("______________________________________")
 		matrix = append(matrix, []string{
-			cleanFilename,
+			cleanName[:len(cleanName)-4],
+			cleanName[len(cleanName)-4:],
 			folderdates[h],
-			date,
+			folderDay,
+			// date,
 			day,
-			time,
+			dayNum,
+			month,
+			year,
+			edittime,
 			loc,
 			probed.Format.Duration,
 			probed.Format.Size,
 			probed.Format.BitRate,
 			probed.Format.FormatName,
 			probed.Format.FormatLongName})
-
 	}
 	// fmt.Println(matrix)
 	return matrix
@@ -209,6 +248,7 @@ func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []str
 	var testfiles []string
 
 	searchDir := searchdirectory
+	// fmt.Println(searchDir)
 
 	fileList := []string{}
 	filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
@@ -222,15 +262,16 @@ func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []str
 
 	g := RemoveDuplicates(collector)
 
+	// fmt.Println(searchdirectory[27:len(searchdirectory)])
+
 	for i := 0; i < len(g); i++ {
 		fileInfo, err = os.Stat(g[i])
 		if err != nil {
 			log.Fatal(err)
 		}
 		if fileInfo.IsDir() == true {
-			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != searchdirectory[22:len(searchdirectory)]) && (fileInfo.Name() != "gifs") && (fileInfo.Name() != "cuts") && (fileInfo.Name() != "stills") {
+			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != searchdirectory[27:len(searchdirectory)]) && (fileInfo.Name() != "gifs") && (fileInfo.Name() != "cuts") && (fileInfo.Name() != "stills") {
 				folderCollect = append(folderCollect, fileInfo.Name())
-
 			}
 		}
 	}
@@ -241,22 +282,23 @@ func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []str
 
 			if !f.IsDir() {
 				if (f.Name()[len(f.Name())-4:]) == ".mp4" {
-					fmt.Println("MP4")
+					// fmt.Println("MP4")
 					r, err2 := regexp.MatchString(".mp4", f.Name())
 					if err2 == nil && r {
 						testfiles = append(testfiles, newDir)
 						files3 = append(files3, newDir+"/"+f.Name())
-						fmt.Println(f.Name())
+						// fmt.Println(testfiles)
+						// fmt.Println(f.Name())
 					} else {
 
 					}
 				} else if f.Name()[len(f.Name())-4:] == ".mov" {
-					fmt.Println("MOV")
+					// fmt.Println("MOV")
 					r, err2 := regexp.MatchString(".mov", f.Name())
 					if err2 == nil && r {
 						testfiles = append(testfiles, newDir)
 						files3 = append(files3, newDir+"/"+f.Name())
-						fmt.Println(f.Name())
+						// fmt.Println(f.Name())
 					} else {
 
 					}
@@ -268,5 +310,95 @@ func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []str
 			panic(err)
 		}
 	}
+	// gifhold := CreateGifExtension(folderCollect, files3, testfiles)
+	// fmt.Println(folderCollect, testfiles, files3)
 	return testfiles, files3
+}
+
+// CrawlAndCollect : asdf
+func CrawlAndCollectGIF(searchdirectory string, searchType string) ([]string, []string, []string) {
+	var collector []string
+	var folderCollect []string
+	var files3 []string
+	var testfiles []string
+
+	searchDir := searchdirectory
+	// fmt.Println(searchDir)
+
+	fileList := []string{}
+	filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
+		fileList = append(fileList, path)
+		return nil
+	})
+
+	for _, file := range fileList {
+		collector = append(collector, file)
+	}
+
+	g := RemoveDuplicates(collector)
+
+	// fmt.Println(searchdirectory[27:len(searchdirectory)])
+
+	for i := 0; i < len(g); i++ {
+		fileInfo, err = os.Stat(g[i])
+		if err != nil {
+			log.Fatal(err)
+		}
+		if fileInfo.IsDir() == true {
+			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != searchdirectory[27:len(searchdirectory)]) && (fileInfo.Name() != "gifs") && (fileInfo.Name() != "png") && (fileInfo.Name() != "cuts") && (fileInfo.Name() != "stills") {
+				folderCollect = append(folderCollect, fileInfo.Name())
+			}
+		}
+	}
+
+	// create folders
+	for k2 := 0; k2 < len(folderCollect); k2++ {
+		newDir := searchDir + "/" + folderCollect[k2] + "/gifs"
+		CreateDirectories(newDir)
+	}
+
+	for k3 := 0; k3 < len(folderCollect); k3++ {
+		newDir := searchDir + "/" + folderCollect[k3] + "/png"
+		CreateDirectories(newDir)
+	}
+
+	// fmt.Println(folderCollect)
+
+	for k := 1; k < len(folderCollect); k++ {
+		newDir := searchDir + "/" + folderCollect[k] + searchType
+		err := filepath.Walk(newDir, func(path string, f os.FileInfo, err error) error {
+
+			if !f.IsDir() {
+				if (f.Name()[len(f.Name())-4:]) == ".mp4" {
+					// fmt.Println("MP4")
+					r, err2 := regexp.MatchString(".mp4", f.Name())
+					if err2 == nil && r {
+						testfiles = append(testfiles, newDir)
+						files3 = append(files3, newDir+"/"+f.Name())
+						// fmt.Println(testfiles)
+						// fmt.Println(f.Name())
+					} else {
+
+					}
+				} else if f.Name()[len(f.Name())-4:] == ".mov" {
+					// fmt.Println("MOV")
+					r, err2 := regexp.MatchString(".mov", f.Name())
+					if err2 == nil && r {
+						testfiles = append(testfiles, newDir)
+						files3 = append(files3, newDir+"/"+f.Name())
+						// fmt.Println(f.Name())
+					} else {
+
+					}
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			panic(err)
+		}
+	}
+	gifhold := CreateGifExtension(folderCollect, files3, testfiles)
+	// fmt.Println(folderCollect, testfiles, files3)
+	return testfiles, files3, gifhold
 }
