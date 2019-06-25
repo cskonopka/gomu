@@ -59,11 +59,60 @@ func RemoveDuplicates(elements []string) []string {
 // CreatePNG :  .png file from source content
 func CreatePNG(mp4 string, png string) {
 	fmt.Println("-- CREATE PNG -- ", png)
-	// cmd2 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "13", "-i", mp4, "-filter_complex", "[0:v] palettegen", png)
+	cmd := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] palettegen", png)
+	cmd.Run()
+}
 
-	cmd2 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] palettegen", png)
+// CreateStill :  .png file from source content
+func CreateStill(mp4 string, still string) {
+	fmt.Println("-- CREATE STILL -- ", still[:len(still)-4])
+	CreateDirectories("jpg")
+	newFilename := still[:len(still)-4] + "-still.jpeg"
+	// ffmpeg -ss 01:23:45 -i input -vframes 1 -q:v 2 output.jpg
+	// "-t", "11", "-i", mp4, "-filter_complex", "[0:v] palettegen", png)
+	cmd5 := exec.Command("ffmpeg", "-i", mp4, "-f", "image2", newFilename)
 
-	cmd2.Run()
+	cmd5.Run()
+}
+
+// CreateStillBundle :  .jpg file from source content
+func CreateStillBundle(mp4 string, still string) {
+	fmt.Println("-- CREATE JPGS -- ", still[:len(still)-4])
+
+	trimDir := strings.SplitAfter(still[:len(still)-4], "/edits")
+	removeEditDir := trimDir[0][:len(trimDir[0])-5]
+	newDir := removeEditDir + "jpg"
+
+	// CreateDirectories(newDir)
+	check := newDir + "/%04d.jpg"
+	// fmt.Println(check)
+	// fmt.Println(mp4,
+
+	// cmd5 := exec.Command("ffmpeg", "-i", mp4, "-f", "image2", check)
+	cmd5 := exec.Command("ffmpeg", "-i", mp4, check)
+
+	// newFolder := "/Volumes/vs01_042015-102015/2015-04-april/04-06-2015/jpg/" + mp4[59:len(mp4)-4]
+
+	// gomu.CreateDirectories("/Volumes/vs01_042015-102015/2015-04-april/04-06-2015/jpg")
+	// gomu.CreateDirectories(newFolder)
+	// gomu.MoveFile(newFolder, "/Volumes/vs01_042015-102015/2015-04-april/04-06-2015/jpg")
+
+	// CreateDirectories("jpg")
+	// newFilename := still[:len(still)-4] + "-still.jpeg"
+	// ffmpeg -ss 01:23:45 -i input -vframes 1 -q:v 2 output.jpg
+	// "-t", "11", "-i", mp4, "-filter_complex", "[0:v] palettegen", png)
+
+	// cmd5 := exec.Command("ffmpeg", "-i", mp4, "-f", "image2", newFilename)
+
+	cmd5.Run()
+}
+
+// MoveStill : Move .png to folder
+func MoveFile(source string, destination string) {
+	fmt.Println("-- MOVE STILL --")
+	fmt.Println(destination)
+	cmd4 := exec.Command("mv", source, destination)
+	cmd4.Run()
 }
 
 // MovePNG : Move .png to folder
@@ -84,7 +133,7 @@ func CreateLowResGIF(mp4 string, gif string) {
 	fmt.Println("-- CREATE GIF -- ", gif)
 	// cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "13", "-i", mp4, "-filter_complex", "[0:v] fps=15,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
 	// cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=15,scale=w=1280:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
-	cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=12,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
+	cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=24,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
 
 	cmd3.Run()
 }
@@ -345,7 +394,7 @@ func CrawlAndCollectGIF(searchdirectory string, searchType string) ([]string, []
 			log.Fatal(err)
 		}
 		if fileInfo.IsDir() == true {
-			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != searchdirectory[27:len(searchdirectory)]) && (fileInfo.Name() != "gifs") && (fileInfo.Name() != "png") && (fileInfo.Name() != "cuts") && (fileInfo.Name() != "stills") {
+			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != searchdirectory[27:len(searchdirectory)]) && (fileInfo.Name() != "gifs") && (fileInfo.Name() != "png") && (fileInfo.Name() != "cuts") && (fileInfo.Name() != "stills") && (fileInfo.Name() != "jpg") {
 				folderCollect = append(folderCollect, fileInfo.Name())
 			}
 		}
@@ -362,12 +411,17 @@ func CrawlAndCollectGIF(searchdirectory string, searchType string) ([]string, []
 		CreateDirectories(newDir)
 	}
 
+	for k3 := 0; k3 < len(folderCollect); k3++ {
+		newDir := searchDir + "/" + folderCollect[k3] + "/jpg"
+		CreateDirectories(newDir)
+	}
+
 	// fmt.Println(folderCollect)
 
 	for k := 1; k < len(folderCollect); k++ {
 		newDir := searchDir + "/" + folderCollect[k] + searchType
 		err := filepath.Walk(newDir, func(path string, f os.FileInfo, err error) error {
-
+			fmt.Println(newDir)
 			if !f.IsDir() {
 				if (f.Name()[len(f.Name())-4:]) == ".mp4" {
 					// fmt.Println("MP4")
