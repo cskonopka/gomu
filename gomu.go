@@ -63,7 +63,7 @@ func CreatePNG(mp4 string, png string) {
 	cmd.Run()
 }
 
-// CreateStill :  .png file from source content
+// CreateStill : Create single .jpg file from a source
 func CreateStill(mp4 string, still string) {
 	fmt.Println("-- CREATE STILL -- ", still[:len(still)-4])
 	CreateDirectories("jpg")
@@ -75,34 +75,21 @@ func CreateStill(mp4 string, still string) {
 	cmd5.Run()
 }
 
-// CreateStillBundle :  .jpg file from source content
+// CreateStillBundle :  Generate a bundle of .jpg files based on frame extraction
 func CreateStillBundle(mp4 string, still string) {
 	fmt.Println("-- CREATE JPGS -- ", still[:len(still)-4])
-
+	// fmt.Println(mp4[59 : len(mp4)-4])
+	isolatedVideo := mp4[59 : len(mp4)-4]
 	trimDir := strings.SplitAfter(still[:len(still)-4], "/edits")
 	removeEditDir := trimDir[0][:len(trimDir[0])-5]
-	newDir := removeEditDir + "jpg"
+	newDir := removeEditDir + "jpg/" + isolatedVideo
 
-	// CreateDirectories(newDir)
-	check := newDir + "/%04d.jpg"
-	// fmt.Println(check)
-	// fmt.Println(mp4,
+	fmt.Println(newDir)
 
-	// cmd5 := exec.Command("ffmpeg", "-i", mp4, "-f", "image2", check)
+	CreateDirectories(newDir)
+
+	check := newDir + "/" + isolatedVideo + "-frame-%04d.jpg"
 	cmd5 := exec.Command("ffmpeg", "-i", mp4, check)
-
-	// newFolder := "/Volumes/vs01_042015-102015/2015-04-april/04-06-2015/jpg/" + mp4[59:len(mp4)-4]
-
-	// gomu.CreateDirectories("/Volumes/vs01_042015-102015/2015-04-april/04-06-2015/jpg")
-	// gomu.CreateDirectories(newFolder)
-	// gomu.MoveFile(newFolder, "/Volumes/vs01_042015-102015/2015-04-april/04-06-2015/jpg")
-
-	// CreateDirectories("jpg")
-	// newFilename := still[:len(still)-4] + "-still.jpeg"
-	// ffmpeg -ss 01:23:45 -i input -vframes 1 -q:v 2 output.jpg
-	// "-t", "11", "-i", mp4, "-filter_complex", "[0:v] palettegen", png)
-
-	// cmd5 := exec.Command("ffmpeg", "-i", mp4, "-f", "image2", newFilename)
 
 	cmd5.Run()
 }
@@ -133,7 +120,7 @@ func CreateLowResGIF(mp4 string, gif string) {
 	fmt.Println("-- CREATE GIF -- ", gif)
 	// cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "13", "-i", mp4, "-filter_complex", "[0:v] fps=15,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
 	// cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=15,scale=w=1280:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
-	cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=24,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
+	cmd3 := exec.Command("ffmpeg", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=24,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
 
 	cmd3.Run()
 }
