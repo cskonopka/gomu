@@ -41,6 +41,12 @@ type Ffprobe struct {
 	} `json:"format"`
 }
 
+type CsvLine struct {
+	Column1 string
+	Column2 string
+	Column3 string
+}
+
 // RemoveDuplicates : Remove duplicates from a []string
 func RemoveDuplicates(elements []string) []string {
 	encountered := map[string]bool{}
@@ -68,8 +74,6 @@ func CreateStill(mp4 string, still string) {
 	fmt.Println("-- CREATE STILL -- ", still[:len(still)-4])
 	CreateDirectories("jpg")
 	newFilename := still[:len(still)-4] + "-still.jpeg"
-	// ffmpeg -ss 01:23:45 -i input -vframes 1 -q:v 2 output.jpg
-	// "-t", "11", "-i", mp4, "-filter_complex", "[0:v] palettegen", png)
 	cmd5 := exec.Command("ffmpeg", "-i", mp4, "-f", "image2", newFilename)
 
 	cmd5.Run()
@@ -78,7 +82,6 @@ func CreateStill(mp4 string, still string) {
 // CreateStillBundle :  Generate a bundle of .jpg files based on frame extraction
 func CreateStillBundle(mp4 string, still string) {
 	fmt.Println("-- CREATE JPGS -- ", still[:len(still)-4])
-	// fmt.Println(mp4[59 : len(mp4)-4])
 	isolatedVideo := mp4[59 : len(mp4)-4]
 	trimDir := strings.SplitAfter(still[:len(still)-4], "/edits")
 	removeEditDir := trimDir[0][:len(trimDir[0])-5]
@@ -118,28 +121,22 @@ func BytesToString(data []byte) string {
 // CreateLowResGIF : Create .gif file from source content and .png palatte
 func CreateLowResGIF(mp4 string, gif string) {
 	fmt.Println("-- CREATE GIF -- ", gif)
-	// cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "13", "-i", mp4, "-filter_complex", "[0:v] fps=15,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
-	// cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=15,scale=w=1280:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
-	cmd3 := exec.Command("ffmpeg", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=24,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
-
-	cmd3.Run()
+	cmd := exec.Command("ffmpeg", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=24,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
+	cmd.Run()
 }
 
 // CreateGIF : Create .gif file from source content and .png palatte
 func CreateGIF(mp4 string, gif string) {
 	fmt.Println("-- CREATE GIF -- ", gif)
-	// cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "13", "-i", mp4, "-filter_complex", "[0:v] fps=15,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
-	// cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=15,scale=w=1280:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
-	cmd3 := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=60,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
-
-	cmd3.Run()
+	cmd := exec.Command("ffmpeg", "-y", "-ss", "0", "-t", "11", "-i", mp4, "-filter_complex", "[0:v] fps=60,scale=w=480:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1", gif)
+	cmd.Run()
 }
 
 // MoveGIF : Move .gif to folder
 func MoveGIF(source string, destination string) {
 	fmt.Println("-- MOVE GIF --")
-	cmd4 := exec.Command("mv", source, destination)
-	cmd4.Run()
+	cmd := exec.Command("mv", source, destination)
+	cmd.Run()
 }
 
 // CreateDirectories : Create /gif directories
@@ -276,6 +273,66 @@ func ProbeFiles(dir string, files []string, folderdates []string) [][]string {
 	return matrix
 }
 
+// ReadCSV : asdf
+func ReadCSV(input string) []string {
+	filename := input
+
+	f, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	lines, err := csv.NewReader(f).ReadAll()
+	if err != nil {
+		panic(err)
+	}
+
+	var fromEditAnalysis []string
+	// Loop through lines & turn into object
+	for _, line := range lines {
+		data := CsvLine{
+			Column1: line[0],
+		}
+		fromEditAnalysis = append(fromEditAnalysis, data.Column1)
+	}
+	return fromEditAnalysis
+}
+
+func ReadVimeoCSV(input string) ([]string, []string, []string) {
+	// filename := "Leafly-Strains - Sheet1.csv"
+	filename := input
+
+	// Open CSV file
+	f, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	// Read File into a Variable
+	lines, err := csv.NewReader(f).ReadAll()
+	if err != nil {
+		panic(err)
+	}
+
+	var fromEditAnalysis []string
+	var id []string
+	var dLink []string
+	// Loop through lines & turn into object
+	for _, line := range lines {
+		data := CsvLine{
+			Column2: line[1],
+			Column1: line[2],
+			Column3: line[5],
+		}
+		fromEditAnalysis = append(fromEditAnalysis, data.Column1)
+		id = append(id, data.Column2)
+		dLink = append(dLink, data.Column3)
+	}
+	return id, fromEditAnalysis, dLink
+}
+
 // CrawlAndCollect : asdf
 func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []string) {
 	var collector []string
@@ -306,7 +363,7 @@ func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []str
 			log.Fatal(err)
 		}
 		if fileInfo.IsDir() == true {
-			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != searchdirectory[27:len(searchdirectory)]) && (fileInfo.Name() != "gifs") && (fileInfo.Name() != "cuts") && (fileInfo.Name() != "stills") {
+			if (fileInfo.Name() != "edits") && (fileInfo.Name() != "raw") && (fileInfo.Name() != "png") && (fileInfo.Name() != searchdirectory[27:len(searchdirectory)]) && (fileInfo.Name() != "gifs") && (fileInfo.Name() != "jpg") && (fileInfo.Name() != "cuts") && (fileInfo.Name() != "stills") {
 				folderCollect = append(folderCollect, fileInfo.Name())
 			}
 		}
@@ -314,6 +371,7 @@ func CrawlAndCollect(searchdirectory string, searchType string) ([]string, []str
 
 	for k := 1; k < len(folderCollect); k++ {
 		newDir := searchDir + "/" + folderCollect[k] + searchType
+		fmt.Println(newDir)
 		err := filepath.Walk(newDir, func(path string, f os.FileInfo, err error) error {
 
 			if !f.IsDir() {
