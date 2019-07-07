@@ -193,31 +193,49 @@ const (
 // ProbeFiles : ffprobe input files
 func ProbeFiles(dir string, files []string, folderdates []string) [][]string {
 	var matrix [][]string
+	// matrix = append(matrix, []string{
+	// 	"Filename",
+	// 	"File Type",
+	// 	"Folder Date",
+	// 	"Folder Day Number",
+	// 	"Edit Date",
+	// 	"Edit Day Number",
+	// 	"Edit Day",
+	// 	"Month",
+	// 	"Year",
+	// 	"Time",
+	// 	"Timezone",
+	// 	"Duration",
+	// 	"Size",
+	// 	"Bitrate",
+	// 	"Format",
+	// 	"Formant Long"})
+
 	matrix = append(matrix, []string{
 		"Filename",
-		"File Type",
-		"Folder Date",
-		"Folder Day Number",
+		"FolderDate",
+		"Folder Month",
+		"Folder Day",
+		"Folder Year",
 		"Edit Date",
+		"Edit Month",
 		"Edit Day",
+		"Edit Year",
 		"Edit Day Number",
-		"Month",
-		"Year",
-		"Time",
+		"Timestamp",
 		"Timezone",
 		"Duration",
 		"Size",
 		"Bitrate",
 		"Format",
 		"Formant Long"})
-
 	// Probe Video Files
 	for h := 0; h < len(files); h++ {
 		new := dir + "/" + folderdates[h] + "/edits/" + files[h]
 		// fmt.Println(new)
 		data, err := ffprobe.GetProbeData(new, 5000*time.Millisecond)
 		if err != nil {
-			log.Panicf("Error getting data: %v", err)
+			log.Panicf("Error getting data:  %v", err)
 		}
 
 		buf, err := json.MarshalIndent(data, "", "  ")
@@ -231,43 +249,84 @@ func ProbeFiles(dir string, files []string, folderdates []string) [][]string {
 			panic(err)
 		}
 
+		// ffprobeFilename := probed.Format.Filename
+		// cleanName := filepath.Base(ffprobeFilename)
+
+		// unixdate := string(probed.Format.Tags.CreationTime.Format(time.RFC850))
+
+		// s := strings.Split(unixdate, ",")
+		// // date := s[1][1:11]
+		// day := s[0]
+		// dayNum := s[1][1:3]
+		// month := s[1][4:7]
+		// year := "20" + s[1][8:11]
+		// edittime := s[1][11:19]
+		// loc := s[1][20:23]
+		// folderDay := folderdates[h][3:5]
+
+		// // fmt.Println(date, day, dayNum, month, year, time, loc)
+
+		// fmt.Println(cleanName[:len(cleanName)-4], cleanName[len(cleanName)-4:], folderdates[h], month, folderDay, year, folderDay, day, dayNum, month, year, edittime, loc, probed.Format.Duration, probed.Format.Tags.CreationTime, probed.Format.FormatLongName, probed.Format.Size)
+
 		ffprobeFilename := probed.Format.Filename
-		cleanName := filepath.Base(ffprobeFilename)
+		cleanFilename := filepath.Base(ffprobeFilename)
+
+		fmt.Println(cleanFilename)
+		fmt.Println(probed.Format.Duration)
+		fmt.Println(probed.Format.Tags.CreationTime)
+		fmt.Println(probed.Format.FormatLongName)
+		fmt.Println(probed.Format.Size)
 
 		unixdate := string(probed.Format.Tags.CreationTime.Format(time.RFC850))
 
 		s := strings.Split(unixdate, ",")
-		// date := s[1][1:11]
-		day := s[0]
-		dayNum := s[1][1:3]
-		month := s[1][4:7]
-		year := "20" + s[1][8:11]
-		edittime := s[1][11:19]
-		loc := s[1][20:23]
+		folderMonth := folderdates[h][:2]
 		folderDay := folderdates[h][3:5]
-
-		// fmt.Println(date, day, dayNum, month, year, time, loc)
-
-		fmt.Println(cleanName[:len(cleanName)-4], cleanName[len(cleanName)-4:], folderdates[h], month, folderDay, year, folderDay, day, dayNum, month, year, edittime, loc, probed.Format.Duration, probed.Format.Tags.CreationTime, probed.Format.FormatLongName, probed.Format.Size)
+		folderYear := folderdates[h][len(folderdates[h])-4:]
+		editDate := s[1][1:11]
+		editMonth := s[1][4:7]
+		editDay := s[0]
+		editYear := "20" + s[1][8:11]
+		editDayNumber := s[1][1:3]
+		timestamp := s[1][11:19]
+		loc := s[1][20:23]
 
 		fmt.Println("______________________________________")
 		matrix = append(matrix, []string{
-			cleanName[:len(cleanName)-4],
-			cleanName[len(cleanName)-4:],
+			cleanFilename,
 			folderdates[h],
+			folderMonth,
 			folderDay,
-			// date,
-			day,
-			dayNum,
-			month,
-			year,
-			edittime,
+			folderYear,
+			editMonth,
+			editDate,
+			editDay,
+			editYear,
+			editDayNumber,
+			timestamp,
 			loc,
 			probed.Format.Duration,
 			probed.Format.Size,
 			probed.Format.BitRate,
 			probed.Format.FormatName,
 			probed.Format.FormatLongName})
+		// matrix = append(matrix, []string{
+		// 	cleanName[:len(cleanName)-4],
+		// 	// cleanName[len(cleanName)-4:],
+		// 	folderdates[h],
+		// 	folderDay,
+		// 	// date,
+		// 	day,
+		// 	dayNum,
+		// 	month,
+		// 	year,
+		// 	edittime,
+		// 	loc,
+		// 	probed.Format.Duration,
+		// 	probed.Format.Size,
+		// 	probed.Format.BitRate,
+		// 	probed.Format.FormatName,
+		// 	probed.Format.FormatLongName})
 	}
 	// fmt.Println(matrix)
 	return matrix
@@ -284,6 +343,7 @@ func ReadCSV(input string) []string {
 	defer f.Close()
 
 	lines, err := csv.NewReader(f).ReadAll()
+	fmt.Println(lines)
 	if err != nil {
 		panic(err)
 	}
