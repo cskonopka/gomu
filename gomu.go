@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -45,6 +46,358 @@ type CsvLine struct {
 	Column1 string
 	Column2 string
 	Column3 string
+}
+
+type NlpTagCsv struct {
+	Column1 string
+	Column2 string
+}
+
+// ReadStrainNlpTagCsvSetup ... setup for the nlptagcsv
+func ReadStrainNlpTagCsvSetup() [][]string {
+	masterNLP := []string{"(", ")", ",", ":", ".", "''", "``", "#", "$", "CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN", "NNP", "NNPS", "NNS", "PDT", "POS", "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "SYM", "TO", "UH", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP", "WP$", "WRB"}
+
+	var getthemall [][]string
+	getthemall = append(getthemall, []string{
+		"Strain File",
+		masterNLP[0],
+		masterNLP[1],
+		masterNLP[2],
+		masterNLP[3],
+		masterNLP[4],
+		masterNLP[5],
+		masterNLP[6],
+		masterNLP[7],
+		masterNLP[8],
+		masterNLP[9],
+		masterNLP[10],
+		masterNLP[11],
+		masterNLP[12],
+		masterNLP[13],
+		masterNLP[14],
+		masterNLP[15],
+		masterNLP[16],
+		masterNLP[17],
+		masterNLP[18],
+		masterNLP[19],
+		masterNLP[20],
+		masterNLP[21],
+		masterNLP[22],
+		masterNLP[23],
+		masterNLP[24],
+		masterNLP[25],
+		masterNLP[26],
+		masterNLP[27],
+		masterNLP[28],
+		masterNLP[29],
+		masterNLP[30],
+		masterNLP[31],
+		masterNLP[32],
+		masterNLP[33],
+		masterNLP[34],
+		masterNLP[35],
+		masterNLP[36],
+		masterNLP[37],
+		masterNLP[38],
+		masterNLP[39],
+		masterNLP[40],
+		masterNLP[41],
+		masterNLP[42],
+		masterNLP[43],
+		masterNLP[44]})
+	return getthemall
+}
+
+// ReadStrainNlpTagCsv ... read individual csv file contain strain NLP tags
+func ReadStrainNlpTagCsv(inputFile string) [][]string {
+
+	// fmt.Println("gomu --- ", inputFile)
+	incomingFile := inputFile[65:len(inputFile)]
+
+	// Open CSV file
+	f, err := os.Open(inputFile)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	// Read File into a Variable
+	lines, err := csv.NewReader(f).ReadAll()
+	if err != nil {
+		panic(err)
+	}
+
+	var matrix [][]string
+	// Loop through lines & turn into object
+	for _, line := range lines {
+		data := NlpTagCsv{
+			Column1: line[0],
+			Column2: line[1],
+		}
+		matrix = append(matrix, []string{data.Column1, data.Column2})
+	}
+
+	var nlpTag01, nlpTag02, nlpTag03, nlpTag04, nlpTag05, nlpTag06, nlpTag07, nlpTag08, nlpTag09, nlpTag10, nlpTag11, nlpTag12, nlpTag13, nlpTag14, nlpTag15, nlpTag16, nlpTag17, nlpTag18, nlpTag19, nlpTag20, nlpTag21, nlpTag22, nlpTag23, nlpTag24, nlpTag25, nlpTag26, nlpTag27, nlpTag28, nlpTag29, nlpTag30, nlpTag31, nlpTag32, nlpTag33, nlpTag34, nlpTag35, nlpTag36, nlpTag37, nlpTag38, nlpTag39, nlpTag40, nlpTag41, nlpTag42, nlpTag43, nlpTag44, nlpTag45 [][]string
+
+	var getthemall [][]string
+	// masterNLP := []string{"(", ")", ",", ":", ".", "''", "``", "#", "$", "CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN", "NNP", "NNPS", "NNS", "PDT", "POS", "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "SYM", "TO", "UH", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP", "WP$", "WRB"}
+
+	// getthemall = append(getthemall, []string{
+	// 	"Strain File",
+	// 	masterNLP[0],
+	// 	masterNLP[1],
+	// 	masterNLP[2],
+	// 	masterNLP[3],
+	// 	masterNLP[4],
+	// 	masterNLP[5],
+	// 	masterNLP[6],
+	// 	masterNLP[7],
+	// 	masterNLP[8],
+	// 	masterNLP[9],
+	// 	masterNLP[10],
+	// 	masterNLP[11],
+	// 	masterNLP[12],
+	// 	masterNLP[13],
+	// 	masterNLP[14],
+	// 	masterNLP[15],
+	// 	masterNLP[16],
+	// 	masterNLP[17],
+	// 	masterNLP[18],
+	// 	masterNLP[19],
+	// 	masterNLP[20],
+	// 	masterNLP[21],
+	// 	masterNLP[22],
+	// 	masterNLP[23],
+	// 	masterNLP[24],
+	// 	masterNLP[25],
+	// 	masterNLP[26],
+	// 	masterNLP[27],
+	// 	masterNLP[28],
+	// 	masterNLP[29],
+	// 	masterNLP[30],
+	// 	masterNLP[31],
+	// 	masterNLP[32],
+	// 	masterNLP[33],
+	// 	masterNLP[34],
+	// 	masterNLP[35],
+	// 	masterNLP[36],
+	// 	masterNLP[37],
+	// 	masterNLP[38],
+	// 	masterNLP[39],
+	// 	masterNLP[40],
+	// 	masterNLP[41],
+	// 	masterNLP[42],
+	// 	masterNLP[43],
+	// 	masterNLP[44]})
+
+	i := 0
+	for i < len(matrix)-1 {
+		i++
+		// collect = append(collect, []string{matrix[i][0], matrix[i][1]})
+		switch matrix[i][1] {
+		case "(":
+			nlpTag01 = append(nlpTag01, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag01)
+		case ")":
+			nlpTag02 = append(nlpTag02, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag02)
+		case ",":
+			nlpTag03 = append(nlpTag03, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag03)
+		case ":":
+			nlpTag04 = append(nlpTag04, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag04)
+		case ".":
+			nlpTag05 = append(nlpTag05, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag05)
+		case "''":
+			nlpTag06 = append(nlpTag06, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag06)
+		case "``":
+			nlpTag07 = append(nlpTag07, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag07)
+		case "#":
+			nlpTag08 = append(nlpTag08, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag08)
+		case "$":
+			nlpTag09 = append(nlpTag09, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag09)
+		case "CC":
+			nlpTag10 = append(nlpTag10, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag10)
+		case "CD":
+			nlpTag11 = append(nlpTag11, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag11)
+		case "DT":
+			nlpTag12 = append(nlpTag12, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag12)
+		case "EX":
+			nlpTag13 = append(nlpTag13, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag13)
+		case "FW":
+			nlpTag14 = append(nlpTag14, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag14)
+		case "IN":
+			nlpTag15 = append(nlpTag15, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag15)
+		case "JJ":
+			nlpTag16 = append(nlpTag16, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag16)
+		case "JJR":
+			nlpTag17 = append(nlpTag17, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag17)
+		case "JJS":
+			nlpTag18 = append(nlpTag18, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag18)
+		case "LS":
+			nlpTag19 = append(nlpTag19, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag19)
+		case "MD":
+			nlpTag20 = append(nlpTag20, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag20)
+		case "NN":
+			nlpTag21 = append(nlpTag21, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag21)
+		case "NNP":
+			nlpTag22 = append(nlpTag22, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag22)
+		case "NNPS":
+			nlpTag23 = append(nlpTag23, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag23)
+		case "NNS":
+			nlpTag24 = append(nlpTag24, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag24)
+		case "PDT":
+			nlpTag25 = append(nlpTag25, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag25)
+		case "POS":
+			nlpTag26 = append(nlpTag26, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag26)
+		case "PRP":
+			nlpTag27 = append(nlpTag27, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag27)
+		case "PRP$":
+			nlpTag28 = append(nlpTag28, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag28)
+		case "RB":
+			nlpTag29 = append(nlpTag29, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag29)
+		case "RBR":
+			nlpTag30 = append(nlpTag30, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag30)
+		case "RBS":
+			nlpTag31 = append(nlpTag31, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag31)
+		case "RP":
+			nlpTag32 = append(nlpTag32, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag32)
+		case "SYM":
+			nlpTag33 = append(nlpTag33, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag33)
+		case "TO":
+			nlpTag34 = append(nlpTag34, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag34)
+		case "UH":
+			nlpTag35 = append(nlpTag35, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag35)
+		case "VB":
+			nlpTag36 = append(nlpTag36, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag36)
+		case "VBD":
+			nlpTag37 = append(nlpTag37, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag37)
+		case "VBG":
+			nlpTag38 = append(nlpTag38, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag38)
+		case "VBN":
+			nlpTag39 = append(nlpTag39, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag39)
+		case "VBP":
+			nlpTag40 = append(nlpTag40, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag40)
+		case "VBZ":
+			nlpTag41 = append(nlpTag41, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag41)
+		case "WDT":
+			nlpTag42 = append(nlpTag42, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag42)
+		case "WP":
+			nlpTag43 = append(nlpTag43, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag43)
+		case "WP$":
+			nlpTag44 = append(nlpTag44, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag44)
+		case "WRB":
+			nlpTag45 = append(nlpTag45, []string{matrix[i][0], matrix[i][1]})
+			// fmt.Println(nlpTag45)
+		}
+	}
+
+	getthemall = append(getthemall, []string{
+		incomingFile,
+		strconv.Itoa(len(nlpTag01)),
+		strconv.Itoa(len(nlpTag02)),
+		strconv.Itoa(len(nlpTag03)),
+		strconv.Itoa(len(nlpTag04)),
+		strconv.Itoa(len(nlpTag05)),
+		strconv.Itoa(len(nlpTag06)),
+		strconv.Itoa(len(nlpTag07)),
+		strconv.Itoa(len(nlpTag08)),
+		strconv.Itoa(len(nlpTag09)),
+		strconv.Itoa(len(nlpTag10)),
+		strconv.Itoa(len(nlpTag11)),
+		strconv.Itoa(len(nlpTag12)),
+		strconv.Itoa(len(nlpTag13)),
+		strconv.Itoa(len(nlpTag14)),
+		strconv.Itoa(len(nlpTag15)),
+		strconv.Itoa(len(nlpTag16)),
+		strconv.Itoa(len(nlpTag17)),
+		strconv.Itoa(len(nlpTag18)),
+		strconv.Itoa(len(nlpTag19)),
+		strconv.Itoa(len(nlpTag20)),
+		strconv.Itoa(len(nlpTag21)),
+		strconv.Itoa(len(nlpTag22)),
+		strconv.Itoa(len(nlpTag23)),
+		strconv.Itoa(len(nlpTag24)),
+		strconv.Itoa(len(nlpTag25)),
+		strconv.Itoa(len(nlpTag26)),
+		strconv.Itoa(len(nlpTag27)),
+		strconv.Itoa(len(nlpTag28)),
+		strconv.Itoa(len(nlpTag29)),
+		strconv.Itoa(len(nlpTag30)),
+		strconv.Itoa(len(nlpTag31)),
+		strconv.Itoa(len(nlpTag32)),
+		strconv.Itoa(len(nlpTag33)),
+		strconv.Itoa(len(nlpTag34)),
+		strconv.Itoa(len(nlpTag35)),
+		strconv.Itoa(len(nlpTag36)),
+		strconv.Itoa(len(nlpTag37)),
+		strconv.Itoa(len(nlpTag38)),
+		strconv.Itoa(len(nlpTag39)),
+		strconv.Itoa(len(nlpTag40)),
+		strconv.Itoa(len(nlpTag41)),
+		strconv.Itoa(len(nlpTag42)),
+		strconv.Itoa(len(nlpTag43)),
+		strconv.Itoa(len(nlpTag44)),
+		strconv.Itoa(len(nlpTag45))})
+	// fmt.Println(getthemall)
+	return getthemall
+}
+
+// WalkDirectory: walk directory to find a set of files within said directory
+func WalkDirectory(dir string) []string {
+	var collector []string
+	fileList := []string{}
+	filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		fileList = append(fileList, path)
+		return nil
+	})
+
+	for _, file := range fileList {
+		collector = append(collector, file)
+	}
+	// fmt.Println(collector)
+	return collector
 }
 
 // RemoveDuplicates : Remove duplicates from a []string
@@ -343,12 +696,13 @@ func ReadCSV(input string) []string {
 	defer f.Close()
 
 	lines, err := csv.NewReader(f).ReadAll()
-	fmt.Println(lines)
+
 	if err != nil {
 		panic(err)
 	}
 
 	var fromEditAnalysis []string
+
 	// Loop through lines & turn into object
 	for _, line := range lines {
 		data := CsvLine{
