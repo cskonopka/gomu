@@ -432,6 +432,120 @@ func CreateStill(mp4 string, still string) {
 	cmd5.Run()
 }
 
+func ReadDirRmDups(dir string) []string {
+	var collectFiles []string
+
+	// for looper := 0; looper < len(dir); looper++ {
+	fileList := []string{}
+	filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		fileList = append(fileList, path)
+		return nil
+	})
+
+	for _, file := range fileList {
+		collectFiles = append(collectFiles, file)
+	}
+
+	rmDups := RemoveDuplicates(collectFiles)
+
+	return rmDups
+}
+
+func SearchForThem(typer string, rmDups []string) []string {
+	var savePng []string
+	switch typer {
+	case "gifs":
+		fmt.Println("find the gifs")
+		i := 0
+		for i < len(rmDups)-1 {
+			i++
+			h := strings.Contains(rmDups[i], typer+"/")
+			switch h {
+			case true:
+				if !strings.Contains(rmDups[i], ".DS_Store") {
+					savePng = append(savePng, rmDups[i])
+				}
+			}
+		}
+	case "jpg":
+		fmt.Println("find the jpg")
+		i := 0
+		for i < len(rmDups)-1 {
+			i++
+			h := strings.Contains(rmDups[i], typer+"/")
+			switch h {
+			case true:
+				if !strings.Contains(rmDups[i], ".DS_Store") {
+					savePng = append(savePng, rmDups[i])
+				}
+			}
+		}
+	case "edits":
+		fmt.Println("find the mp4s")
+		i := 0
+		for i < len(rmDups)-1 {
+			i++
+			h := strings.Contains(rmDups[i], typer+"/")
+			switch h {
+			case true:
+				if !strings.Contains(rmDups[i], ".DS_Store") {
+					savePng = append(savePng, rmDups[i])
+				}
+			}
+		}
+	case "png":
+		fmt.Println("find pngs")
+		i := 0
+		for i < len(rmDups)-1 {
+			i++
+			h := strings.Contains(rmDups[i], typer+"/")
+			switch h {
+			case true:
+				if !strings.Contains(rmDups[i], ".DS_Store") {
+					savePng = append(savePng, rmDups[i])
+				}
+			}
+		}
+	case "raw":
+		fmt.Println("find raw")
+		i := 0
+		for i < len(rmDups)-1 {
+			i++
+			h := strings.Contains(rmDups[i], typer+"/")
+			switch h {
+			case true:
+				if !strings.Contains(rmDups[i], ".DS_Store") {
+					savePng = append(savePng, rmDups[i])
+				}
+			}
+		}
+	}
+	return savePng
+}
+
+// Acquire files
+func CreateStillBundle2(files string) {
+	striped := files[:len(files)-4]
+	newMp4 := striped + ".mp4"
+	newJpg := striped + ".jpg"
+	jpgDir := striped[:50] + "/jpg"
+
+	editName := strings.SplitAfter(striped, "/edits")
+
+	fmt.Println(newMp4, newJpg, jpgDir, editName[1][1:])
+
+	// jpgDir2 := striped[:50] + "/jpg/" + editName[1][1:]
+	// fmt.Println(jpgDir2)
+	// cmd3 := exec.Command("mkdir", jpgDir2)
+	// cmd3.Run()
+
+	check := jpgDir + "/" + editName[1][1:] + "/" + editName[1][1:] + "-frame-%04d.jpg"
+	fmt.Println(check)
+	cmd5 := exec.Command("ffmpeg", "-i", newMp4, check)
+
+	cmd5.Run()
+}
+
 // CreateStillBundle :  Generate a bundle of .jpg files based on frame extraction
 func CreateStillBundle(mp4 string, still string) {
 	fmt.Println("-- CREATE JPGS -- ", still[:len(still)-4])
@@ -914,4 +1028,678 @@ func CrawlAndCollectGIF(searchdirectory string, searchType string) ([]string, []
 	gifhold := CreateGifExtension(folderCollect, files3, testfiles)
 	// fmt.Println(folderCollect, testfiles, files3)
 	return testfiles, files3, gifhold
+}
+
+func PrettyPrinter(strains ...[]string) string {
+	// var output []string
+	b, err := json.MarshalIndent(strains, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	return (string(b))
+}
+
+func ExportImageMagickHeaders() [][]string {
+	var matrix [][]string
+	matrix = append(matrix, []string{
+		"Image",
+		"Format",
+		"Mime type",
+		"Class",
+		"Geometry",
+		"Resolution",
+		"Print size",
+		"Units",
+		"Colorspace",
+		"Type",
+		"Base Type",
+		"Endianess",
+		"Depth",
+		"Red",
+		"Green",
+		"Blue",
+		"Alpha",
+		"Pixels",
+		"red min",
+		"red max",
+		"red mean",
+		"red standard deviation",
+		"red kurtosis",
+		"red skewness",
+		"red entropy",
+		"green min",
+		"green max",
+		"green mean",
+		"green standard deviation",
+		"green kurtosis",
+		"green skewness",
+		"green entropy",
+		"blue min",
+		"blue max",
+		"blue mean",
+		"blue standard deviation",
+		"blue kurtosis",
+		"blue skewness",
+		"blue entropy",
+		"alpha min",
+		"alpha max",
+		"alpha mean",
+		"alpha standard deviation",
+		"alpha kurtosis",
+		"alpha skewness",
+		"alpha entropy",
+		"imagstats min",
+		"imagstats max",
+		"imagstats mean",
+		"imagstats standard deviation",
+		"imagstats kurtosis",
+		"imagstats skewness",
+		"imagstats entropy",
+		"Colors",
+		"Rendering intent",
+		"Gamma",
+		"chromaticity red primary",
+		"chromaticity green primary",
+		"chromaticity blue primary",
+		"chromaticity white point",
+		"Matte color",
+		"Background color",
+		"Border color",
+		"Transparent color",
+		"Interlace",
+		"Intensity",
+		"Compose",
+		"Page geometry",
+		"Dispose",
+		"Iterations",
+		"Compression",
+		"Orientation",
+		"Prop date create",
+		"Prop date modify",
+		"png:IHDR.bit-depth-orig",
+		"png:IHDR.bit_depth",
+		"png:IHDR.color-type-orig",
+		"png:IHDR.color_type",
+		"png:IHDR.interlace_method",
+		"png:IHDR.width,height",
+		"png:pHYs",
+		"png:sRGB",
+		"Prop signature",
+		"Artifacts verbose",
+		"Tainted",
+		"Filesize",
+		"Number pixels",
+		"Pixels per second",
+		"User time",
+		"Elapsed time",
+		"Version",
+	})
+
+	return matrix
+}
+
+// EditCsv : struct for edit analysis csv
+type EditCsv struct {
+	Column1  string
+	Column2  string
+	Column3  string
+	Column4  string
+	Column5  string
+	Column6  string
+	Column7  string
+	Column8  string
+	Column9  string
+	Column10 string
+	Column11 string
+	Column12 string
+	Column13 string
+	Column14 string
+	Column15 string
+	Column16 string
+	Column17 string
+}
+
+func ReadEditCsv(input string) [][]string {
+	filename := input
+
+	f, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	lines, err := csv.NewReader(f).ReadAll()
+
+	if err != nil {
+		panic(err)
+	}
+	// fmt.Println(len(lines))
+	var fromEditAnalysis [][]string
+
+	// Loop through lines & turn into object
+	for _, line := range lines {
+
+		data := EditCsv{
+			Column1:  line[0],
+			Column2:  line[1],
+			Column3:  line[2],
+			Column4:  line[3],
+			Column5:  line[4],
+			Column6:  line[5],
+			Column7:  line[6],
+			Column8:  line[7],
+			Column9:  line[8],
+			Column10: line[9],
+			Column11: line[10],
+			Column12: line[11],
+			Column13: line[12],
+			Column14: line[13],
+			Column15: line[14],
+			Column16: line[15],
+			Column17: line[16],
+		}
+		fromEditAnalysis = append(fromEditAnalysis, []string{
+			data.Column1,
+			data.Column2,
+			data.Column3,
+			data.Column4,
+			data.Column5,
+			data.Column6,
+			data.Column7,
+			data.Column8,
+			data.Column9,
+			data.Column10,
+			data.Column11,
+			data.Column12,
+			data.Column13,
+			data.Column14,
+			data.Column15,
+			data.Column16,
+			data.Column17,
+		})
+	}
+
+	return fromEditAnalysis
+}
+
+type MagickCsv struct {
+	Column1  string
+	Column2  string
+	Column3  string
+	Column4  string
+	Column5  string
+	Column6  string
+	Column7  string
+	Column8  string
+	Column9  string
+	Column10 string
+	Column11 string
+	Column12 string
+	Column13 string
+	Column14 string
+	Column15 string
+	Column16 string
+	Column17 string
+	Column18 string
+	Column19 string
+	Column20 string
+	Column21 string
+	Column22 string
+	Column23 string
+	Column24 string
+	Column25 string
+	Column26 string
+	Column27 string
+	Column28 string
+	Column29 string
+	Column30 string
+	Column31 string
+	Column32 string
+	Column33 string
+	Column34 string
+	Column35 string
+	Column36 string
+	Column37 string
+	Column38 string
+	Column39 string
+	Column40 string
+	Column41 string
+	Column42 string
+	Column43 string
+	Column44 string
+	Column45 string
+	Column46 string
+	Column47 string
+	Column48 string
+	Column49 string
+	Column50 string
+	Column51 string
+	Column52 string
+	Column53 string
+	Column54 string
+	Column55 string
+	Column56 string
+	Column57 string
+	Column58 string
+	Column59 string
+	Column60 string
+	Column61 string
+	Column62 string
+	Column63 string
+	Column64 string
+	Column65 string
+	Column66 string
+	Column67 string
+	Column68 string
+	Column69 string
+	Column70 string
+	Column71 string
+	Column72 string
+	Column73 string
+	Column74 string
+	Column75 string
+	Column76 string
+	Column77 string
+	Column78 string
+	Column79 string
+	Column80 string
+	Column81 string
+	Column82 string
+	Column83 string
+	Column84 string
+	Column85 string
+	Column86 string
+	Column87 string
+	Column88 string
+	Column89 string
+	Column90 string
+	Column91 string
+}
+
+// ReadCSV : asdf
+func ReadMagickCSV(input string) [][]string {
+	filename := input
+
+	f, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	lines, err := csv.NewReader(f).ReadAll()
+
+	if err != nil {
+		panic(err)
+	}
+
+	var fromMagickAnalysis [][]string
+
+	// Loop through lines & turn into object
+	for _, line := range lines {
+		data := MagickCsv{
+			Column1:  line[0],
+			Column2:  line[1],
+			Column3:  line[2],
+			Column4:  line[3],
+			Column5:  line[4],
+			Column6:  line[5],
+			Column7:  line[6],
+			Column8:  line[7],
+			Column9:  line[8],
+			Column10: line[9],
+			Column11: line[10],
+			Column12: line[11],
+			Column13: line[12],
+			Column14: line[13],
+			Column15: line[14],
+			Column16: line[15],
+			Column17: line[16],
+			Column18: line[17],
+			Column19: line[18],
+			Column20: line[19],
+			Column21: line[20],
+			Column22: line[21],
+			Column23: line[22],
+			Column24: line[23],
+			Column25: line[24],
+			Column26: line[25],
+			Column27: line[26],
+			Column28: line[27],
+			Column29: line[28],
+			Column30: line[29],
+			Column31: line[30],
+			Column32: line[31],
+			Column33: line[32],
+			Column34: line[33],
+			Column35: line[34],
+			Column36: line[35],
+			Column37: line[36],
+			Column38: line[37],
+			Column39: line[38],
+			Column40: line[39],
+			Column41: line[40],
+			Column42: line[41],
+			Column43: line[42],
+			Column44: line[43],
+			Column45: line[44],
+			Column46: line[45],
+			Column47: line[46],
+			Column48: line[47],
+			Column49: line[48],
+			Column50: line[49],
+			Column51: line[50],
+			Column52: line[51],
+			Column53: line[52],
+			Column54: line[53],
+			Column55: line[54],
+			Column56: line[55],
+			Column57: line[56],
+			Column58: line[57],
+			Column59: line[58],
+			Column60: line[59],
+			Column61: line[60],
+			Column62: line[61],
+			Column63: line[62],
+			Column64: line[63],
+			Column65: line[64],
+			Column66: line[65],
+			Column67: line[66],
+			Column68: line[67],
+			Column69: line[68],
+			Column70: line[69],
+			Column71: line[70],
+			Column72: line[71],
+			Column73: line[72],
+			Column74: line[73],
+			Column75: line[74],
+			Column76: line[75],
+			Column77: line[76],
+			Column78: line[77],
+			Column79: line[78],
+			Column80: line[79],
+			Column81: line[80],
+			Column82: line[81],
+			Column83: line[82],
+			Column84: line[83],
+			Column85: line[84],
+			Column86: line[85],
+			Column87: line[86],
+			Column88: line[87],
+			Column89: line[88],
+			Column90: line[89],
+			Column91: line[90],
+		}
+		fromMagickAnalysis = append(fromMagickAnalysis, []string{data.Column1,
+			data.Column2,
+			data.Column3,
+			data.Column4,
+			data.Column5,
+			data.Column6,
+			data.Column7,
+			data.Column8,
+			data.Column9,
+			data.Column10,
+			data.Column11,
+			data.Column12,
+			data.Column13,
+			data.Column14,
+			data.Column15,
+			data.Column16,
+			data.Column17,
+			data.Column18,
+			data.Column19,
+			data.Column20,
+			data.Column21,
+			data.Column22,
+			data.Column23,
+			data.Column24,
+			data.Column25,
+			data.Column26,
+			data.Column27,
+			data.Column28,
+			data.Column29,
+			data.Column30,
+			data.Column31,
+			data.Column32,
+			data.Column33,
+			data.Column34,
+			data.Column35,
+			data.Column36,
+			data.Column37,
+			data.Column38,
+			data.Column39,
+			data.Column40,
+			data.Column41,
+			data.Column42,
+			data.Column43,
+			data.Column44,
+			data.Column45,
+			data.Column46,
+			data.Column47,
+			data.Column48,
+			data.Column49,
+			data.Column50,
+			data.Column51,
+			data.Column52,
+			data.Column53,
+			data.Column54,
+			data.Column55,
+			data.Column56,
+			data.Column57,
+			data.Column58,
+			data.Column59,
+			data.Column60,
+			data.Column61,
+			data.Column62,
+			data.Column63,
+			data.Column64,
+			data.Column65,
+			data.Column66,
+			data.Column67,
+			data.Column68,
+			data.Column69,
+			data.Column70,
+			data.Column71,
+			data.Column72,
+			data.Column73,
+			data.Column74,
+			data.Column75,
+			data.Column76,
+			data.Column77,
+			data.Column78,
+			data.Column79,
+			data.Column80,
+			data.Column81,
+			data.Column82,
+			data.Column83,
+			data.Column84,
+			data.Column85,
+			data.Column86,
+			data.Column87,
+			data.Column88,
+			data.Column89,
+			data.Column90,
+			data.Column91})
+	}
+	return fromMagickAnalysis
+}
+
+func CreateImageMagickAnalysis(inputFile string) [][]string {
+	out, err := exec.Command("magick", "identify", "-verbose", inputFile).Output()
+
+	if err != nil {
+		fmt.Printf("%s", err)
+	}
+
+	// fmt.Println("Command Successfully Executed")
+
+	output := string(out[:])
+	new := strings.SplitAfter(output, "\n")
+
+	var input []string
+	for h := 0; h < len(new); h++ {
+		input = append(input, new[h])
+	}
+
+	var matrix, what [][]string
+
+	for x := 0; x < len(input)-1; x++ {
+		if x <= 1 {
+			splitter := strings.SplitAfter(input[x][:len(input[x])-1], ": ")
+			matrix = append(matrix, []string{splitter[1]})
+			// fmt.Println(x, splitter[0], splitter[1])
+		} else if (x > 1) && (x < 13) {
+			splitter := strings.SplitAfter(input[x][2:len(input[x])-1], ": ")
+			matrix = append(matrix, []string{splitter[1]})
+			// fmt.Println(x, splitter[0], splitter[1])
+		} else if (x > 13) && (x < 18) {
+			splitter := strings.SplitAfter(input[x][2:len(input[x])-1], ": ")
+			matrix = append(matrix, []string{splitter[1]})
+			// fmt.Println(x, splitter[0], splitter[1])
+		} else if (x > 18) && (x < 20) {
+			// fmt.Println("__", input[x][4:len(input[x])-1])
+			splitter := strings.SplitAfter(input[x][4:len(input[x])-1], ": ")
+			matrix = append(matrix, []string{splitter[1]})
+		} else if (x > 20) && (x < 28) {
+			// fmt.Println("__", input[x][6:len(input[x])-1])
+			splitter := strings.SplitAfter(input[x][4:len(input[x])-1], ": ")
+			matrix = append(matrix, []string{splitter[1]})
+		} else if (x > 28) && (x < 36) { // Red:
+			// fmt.Println("__red ", input[x][6:len(input[x])-1])
+			splitter := strings.SplitAfter(input[x][4:len(input[x])-1], ": ")
+			matrix = append(matrix, []string{splitter[1]})
+		} else if (x > 36) && (x < 44) { // Green:
+			// fmt.Println("__green ", input[x][6:len(input[x])-1])
+			splitter := strings.SplitAfter(input[x][6:len(input[x])-1], ": ")
+			matrix = append(matrix, []string{splitter[1]})
+		} else if (x > 44) && (x < 52) { // Blue:
+			// fmt.Println("__blue ", input[x][6:len(input[x])-1])
+			splitter := strings.SplitAfter(input[x][6:len(input[x])-1], ": ")
+			matrix = append(matrix, []string{splitter[1]})
+		} else if (x > 53) && (x < 61) { // Alpha:
+			// fmt.Println("__alpha ", input[x][6:len(input[x])-1])
+			splitter := strings.SplitAfter(input[x][6:len(input[x])-1], ": ")
+			matrix = append(matrix, []string{splitter[1]})
+		} else if (x > 61) && (x < 63) { // colors
+			splitter := strings.SplitAfter(input[x][2:len(input[x])-1], ": ")
+			// fmt.Println("__color", splitter[1])
+			matrix = append(matrix, []string{splitter[1]})
+		} else if (x > len(input)-42) && (x < len(input)-39) {
+			splitter := strings.SplitAfter(input[x][2:len(input[x])-1], ": ")
+			// fmt.Println("__rendering intent", splitter[1])
+			matrix = append(matrix, []string{splitter[1]})
+		} else if (x > len(input)-39) && (x < len(input)-33) {
+			splitter := strings.SplitAfter(input[x][4:len(input[x])-1], ": ")
+			// fmt.Println(splitter[1])
+			matrix = append(matrix, []string{splitter[1]})
+		} else if (x > len(input)-34) && (x < len(input)-22) {
+			splitter := strings.SplitAfter(input[x][:len(input[x])-1], ": ")
+			// fmt.Println(splitter[1])
+			matrix = append(matrix, []string{splitter[1]})
+		} else if (x > len(input)-22) && (x < len(input)-10) {
+			splitter := strings.SplitAfter(input[x][:len(input[x])-1], ": ")
+			// fmt.Println(splitter[1])
+			matrix = append(matrix, []string{splitter[1]})
+		} else if (x > len(input)-10) && (x < len(input)) {
+			splitter := strings.SplitAfter(input[x][:len(input[x])-1], ": ")
+			// fmt.Println(splitter[1])
+			matrix = append(matrix, []string{splitter[1]})
+		}
+	}
+
+	what = append(what, []string{
+		matrix[0][0],
+		matrix[1][0],
+		matrix[2][0],
+		matrix[3][0],
+		matrix[4][0],
+		matrix[5][0],
+		matrix[6][0],
+		matrix[7][0],
+		matrix[8][0],
+		matrix[9][0],
+		matrix[10][0],
+		matrix[11][0],
+		matrix[12][0],
+		matrix[13][0],
+		matrix[14][0],
+		matrix[15][0],
+		matrix[16][0],
+		matrix[17][0],
+		matrix[18][0],
+		matrix[19][0],
+		matrix[20][0],
+		matrix[21][0],
+		matrix[22][0],
+		matrix[23][0],
+		matrix[24][0],
+		matrix[25][0],
+		matrix[26][0],
+		matrix[27][0],
+		matrix[28][0],
+		matrix[29][0],
+		matrix[30][0],
+		matrix[31][0],
+		matrix[32][0],
+		matrix[33][0],
+		matrix[34][0],
+		matrix[35][0],
+		matrix[36][0],
+		matrix[37][0],
+		matrix[38][0],
+		matrix[39][0],
+		matrix[40][0],
+		matrix[41][0],
+		matrix[42][0],
+		matrix[43][0],
+		matrix[44][0],
+		matrix[45][0],
+		matrix[46][0],
+		matrix[47][0],
+		matrix[48][0],
+		matrix[49][0],
+		matrix[50][0],
+		matrix[51][0],
+		matrix[52][0],
+		matrix[53][0],
+		matrix[54][0],
+		matrix[55][0],
+		matrix[56][0],
+		matrix[57][0],
+		matrix[58][0],
+		matrix[59][0],
+		matrix[60][0],
+		matrix[61][0],
+		matrix[62][0],
+		matrix[63][0],
+		matrix[64][0],
+		matrix[65][0],
+		matrix[66][0],
+		matrix[67][0],
+		matrix[68][0],
+		matrix[69][0],
+		matrix[70][0],
+		matrix[71][0],
+		matrix[72][0],
+		matrix[73][0],
+		matrix[74][0],
+		matrix[75][0],
+		matrix[76][0],
+		matrix[77][0],
+		matrix[78][0],
+		matrix[79][0],
+		matrix[80][0],
+		matrix[81][0],
+		matrix[82][0],
+		matrix[83][0],
+		matrix[84][0],
+		matrix[85][0],
+		matrix[86][0],
+		matrix[87][0],
+		matrix[88][0],
+		matrix[89][0],
+		matrix[90][0],
+	})
+
+	return what
 }
