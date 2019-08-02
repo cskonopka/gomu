@@ -602,6 +602,7 @@ func CreateGIF(mp4 string, gif string) {
 // MoveGIF : Move .gif to folder
 func MoveGIF(source string, destination string) {
 	fmt.Println("-- MOVE GIF --")
+	fmt.Println("source, destination : ", source, destination)
 	cmd := exec.Command("mv", source, destination)
 	cmd.Run()
 }
@@ -760,6 +761,7 @@ func ProbeFiles(dir string, files []string, folderdates []string) [][]string {
 
 		fmt.Println("______________________________________")
 		matrix = append(matrix, []string{
+			// cleanFilename[:len(cleanFilename)-4],
 			cleanFilename,
 			folderdates[h],
 			folderMonth,
